@@ -62,7 +62,8 @@ cd node_modules.patched/degenerator/
 patch -p1 < ../../degenerator.patch
 npm link
 
-# Then we make npm use our local version
+# Then, from the root of our repo, we make npm use our local version
+cd ../..
 npm link degenerator
 ```
 
