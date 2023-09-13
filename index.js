@@ -6,8 +6,11 @@ var pac = require('pac-resolver');
 const PACFile = process.argv[2];
 const Url = process.argv[3];
 
-var FindProxyForURL = pac(fs.readFileSync(PACFile));
-
-FindProxyForURL(Url).then((res) => {
-  console.log('Connection to', Url, 'will be:', res);
-});
+try {
+  var FindProxyForURL = pac(fs.readFileSync(PACFile));
+  FindProxyForURL(Url).then((res) => {
+    console.log('Connection to', Url, 'will be:', res);
+  });
+} catch (error) {
+  console.log(error);
+}
