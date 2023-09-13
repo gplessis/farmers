@@ -1,0 +1,304 @@
+diff --color -urN a/dist/src/generator-to-promise.d.ts b/dist/src/generator-to-promise.d.ts
+--- a/dist/src/generator-to-promise.d.ts	2023-09-13 10:57:33.434890154 -0700
++++ b/dist/src/generator-to-promise.d.ts	2023-09-13 10:58:22.986186144 -0700
+@@ -1 +0,0 @@
+-export default function generatorFnToPromise<T>(generatorFunction: any): (...args: any[]) => Promise<T>;
+diff --color -urN a/dist/src/generator-to-promise.js b/dist/src/generator-to-promise.js
+--- a/dist/src/generator-to-promise.js	2023-09-13 10:57:33.430612835 -0700
++++ b/dist/src/generator-to-promise.js	2023-09-13 10:58:22.987146891 -0700
+@@ -1,67 +1,2 @@
+ "use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-function isGenerator(fn) {
+-    return fn && fn.next && fn.throw;
+-}
+-function isGeneratorFunction(fn) {
+-    return (typeof fn == 'function' && fn.constructor.name == 'GeneratorFunction');
+-}
+-function createDeferred() {
+-    let r;
+-    let j;
+-    const promise = new Promise((resolve, reject) => {
+-        r = resolve;
+-        j = reject;
+-    });
+-    if (!r || !j) {
+-        throw new Error('Creating Deferred failed');
+-    }
+-    return { promise, resolve: r, reject: j };
+-}
+-function generatorFnToPromise(generatorFunction) {
+-    if (!isGeneratorFunction(generatorFunction)) {
+-        if (typeof generatorFunction === 'function') {
+-            return function (...args) {
+-                return Promise.resolve(true).then(() => {
+-                    return generatorFunction.apply(this, args);
+-                });
+-            };
+-        }
+-        throw new Error('The given function must be a generator function');
+-    }
+-    return function (...args) {
+-        const generator = generatorFunction.apply(this, args);
+-        return generatorToPromise(generator);
+-    };
+-}
+-exports.default = generatorFnToPromise;
+-function generatorToPromise(generator) {
+-    const deferred = createDeferred();
+-    (function next(err, value) {
+-        let genState = null;
+-        try {
+-            if (err) {
+-                genState = generator.throw(err);
+-            }
+-            else {
+-                genState = generator.next(value);
+-            }
+-        }
+-        catch (e) {
+-            genState = { value: Promise.reject(e), done: true };
+-        }
+-        if (isGenerator(genState.value)) {
+-            genState.value = generatorToPromise(genState.value);
+-        }
+-        if (genState.done) {
+-            deferred.resolve(genState.value);
+-        }
+-        else {
+-            Promise.resolve(genState.value)
+-                .then(promiseResult => next(null, promiseResult))
+-                .catch(err => next(err));
+-        }
+-    })();
+-    return deferred.promise;
+-}
+ //# sourceMappingURL=generator-to-promise.js.map
+\ No newline at end of file
+diff --color -urN a/dist/src/generator-to-promise.js.map b/dist/src/generator-to-promise.js.map
+--- a/dist/src/generator-to-promise.js.map	2023-09-13 10:57:33.433018285 -0700
++++ b/dist/src/generator-to-promise.js.map	2023-09-13 10:58:22.987800264 -0700
+@@ -1 +1 @@
+-{"version":3,"file":"generator-to-promise.js","sourceRoot":"","sources":["../../src/generator-to-promise.ts"],"names":[],"mappings":";;AAMA,SAAS,WAAW,CAAC,EAAO;IAC3B,OAAO,EAAE,IAAI,EAAE,CAAC,IAAI,IAAI,EAAE,CAAC,KAAK,CAAC;AAClC,CAAC;AAED,SAAS,mBAAmB,CAAC,EAAO;IACnC,OAAO,CACN,OAAO,EAAE,IAAI,UAAU,IAAI,EAAE,CAAC,WAAW,CAAC,IAAI,IAAI,mBAAmB,CACrE,CAAC;AACH,CAAC;AAED,SAAS,cAAc;IACtB,IAAI,CAAC,CAAC;IACN,IAAI,CAAC,CAAC;IACN,MAAM,OAAO,GAAG,IAAI,OAAO,CAC1B,CACC,OAA6C,EAC7C,MAA8B,EACvB,EAAE;QACT,CAAC,GAAG,OAAO,CAAC;QACZ,CAAC,GAAG,MAAM,CAAC;IACZ,CAAC,CACD,CAAC;IACF,IAAI,CAAC,CAAC,IAAI,CAAC,CAAC,EAAE;QACb,MAAM,IAAI,KAAK,CAAC,0BAA0B,CAAC,CAAC;KAC5C;IACD,OAAO,EAAE,OAAO,EAAE,OAAO,EAAE,CAAC,EAAE,MAAM,EAAE,CAAC,EAAE,CAAC;AAC3C,CAAC;AAED,SAAwB,oBAAoB,CAC3C,iBAAsB;IAEtB,IAAI,CAAC,mBAAmB,CAAC,iBAAiB,CAAC,EAAE;QAC5C,IAAI,OAAO,iBAAiB,KAAK,UAAU,EAAE;YAC5C,OAAO,UAAoB,GAAG,IAAW;gBACxC,OAAO,OAAO,CAAC,OAAO,CAAC,IAAI,CAAC,CAAC,IAAI,CAAC,GAAG,EAAE;oBACtC,OAAO,iBAAiB,CAAC,KAAK,CAAC,IAAI,EAAE,IAAI,CAAC,CAAC;gBAC5C,CAAC,CAAC,CAAC;YACJ,CAAC,CAAC;SACF;QACD,MAAM,IAAI,KAAK,CAAC,iDAAiD,CAAC,CAAC;KACnE;IAED,OAAO,UAAoB,GAAG,IAAW;QACxC,MAAM,SAAS,GAAG,iBAAiB,CAAC,KAAK,CAAC,IAAI,EAAE,IAAI,CAAC,CAAC;QACtD,OAAO,kBAAkB,CAAC,SAAS,CAAC,CAAC;IACtC,CAAC,CAAC;AACH,CAAC;AAlBD,uCAkBC;AAED,SAAS,kBAAkB,CAAe,SAAc;IACvD,MAAM,QAAQ,GAAG,cAAc,EAAK,CAAC;IACrC,CAAC,SAAS,IAAI,CAAC,GAAkB,EAAE,KAAW;QAC7C,IAAI,QAAQ,GAAG,IAAI,CAAC;QACpB,IAAI;YACH,IAAI,GAAG,EAAE;gBACR,QAAQ,GAAG,SAAS,CAAC,KAAK,CAAC,GAAG,CAAC,CAAC;aAChC;iBAAM;gBACN,QAAQ,GAAG,SAAS,CAAC,IAAI,CAAC,KAAK,CAAC,CAAC;aACjC;SACD;QAAC,OAAO,CAAC,EAAE;YACX,QAAQ,GAAG,EAAE,KAAK,EAAE,OAAO,CAAC,MAAM,CAAC,CAAC,CAAC,EAAE,IAAI,EAAE,IAAI,EAAE,CAAC;SACpD;QAED,IAAI,WAAW,CAAC,QAAQ,CAAC,KAAK,CAAC,EAAE;YAChC,QAAQ,CAAC,KAAK,GAAG,kBAAkB,CAAC,QAAQ,CAAC,KAAK,CAAC,CAAC;SACpD;QAED,IAAI,QAAQ,CAAC,IAAI,EAAE;YAClB,QAAQ,CAAC,OAAO,CAAC,QAAQ,CAAC,KAAK,CAAC,CAAC;SACjC;aAAM;YACN,OAAO,CAAC,OAAO,CAAC,QAAQ,CAAC,KAAK,CAAC;iBAC7B,IAAI,CAAC,aAAa,CAAC,EAAE,CAAC,IAAI,CAAC,IAAI,EAAE,aAAa,CAAC,CAAC;iBAChD,KAAK,CAAC,GAAG,CAAC,EAAE,CAAC,IAAI,CAAC,GAAG,CAAC,CAAC,CAAC;SAC1B;IACF,CAAC,CAAC,EAAE,CAAC;IAEL,OAAO,QAAQ,CAAC,OAAO,CAAC;AACzB,CAAC"}
+\ No newline at end of file
++{"version":3,"file":"generator-to-promise.js","sourceRoot":"","sources":["../../src/generator-to-promise.ts"],"names":[],"mappings":""}
+\ No newline at end of file
+diff --color -urN a/dist/src/index.d.ts b/dist/src/index.d.ts
+--- a/dist/src/index.d.ts	2023-09-13 10:57:33.435095029 -0700
++++ b/dist/src/index.d.ts	2023-09-13 10:58:22.988493220 -0700
+@@ -8,18 +8,13 @@
+  * @return {String} Converted JavaScript string with async/await injected
+  * @api public
+  */
+-declare function degenerator(code: string, _names: degenerator.DegeneratorNames, { output }?: degenerator.DegeneratorOptions): string;
++declare function degenerator(code: string, _names: degenerator.DegeneratorNames): string;
+ declare namespace degenerator {
+     type DegeneratorName = string | RegExp;
+     type DegeneratorNames = DegeneratorName[];
+-    type DegeneratorOutput = 'async' | 'generator';
+-    interface DegeneratorOptions {
+-        output?: DegeneratorOutput;
+-    }
+-    interface CompileOptions extends DegeneratorOptions, RunningScriptOptions {
++    interface CompileOptions extends RunningScriptOptions {
+         sandbox?: Context;
+     }
+-    const supportsAsync: boolean;
+-    function compile<T extends Function>(code: string, returnName: string, names: DegeneratorNames, options?: CompileOptions): T;
++    function compile<R = any, A extends any[] = []>(code: string, returnName: string, names: DegeneratorNames, options?: CompileOptions): (...args: A) => Promise<R>;
+ }
+ export = degenerator;
+diff --color -urN a/dist/src/index.js b/dist/src/index.js
+--- a/dist/src/index.js	2023-09-13 10:57:33.431245082 -0700
++++ b/dist/src/index.js	2023-09-13 10:58:22.989399218 -0700
+@@ -1,14 +1,9 @@
+ "use strict";
+-var __importDefault = (this && this.__importDefault) || function (mod) {
+-    return (mod && mod.__esModule) ? mod : { "default": mod };
+-};
+ const util_1 = require("util");
+ const escodegen_1 = require("escodegen");
+ const esprima_1 = require("esprima");
+ const ast_types_1 = require("ast-types");
+-const vm_1 = require("vm");
+-const supports_async_1 = __importDefault(require("./supports-async"));
+-const generator_to_promise_1 = __importDefault(require("./generator-to-promise"));
++const vm2_1 = require("vm2");
+ /**
+  * Compiles sync JavaScript code into JavaScript with async Functions.
+  *
+@@ -17,7 +12,7 @@
+  * @return {String} Converted JavaScript string with async/await injected
+  * @api public
+  */
+-function degenerator(code, _names, { output = 'async' } = {}) {
++function degenerator(code, _names) {
+     if (!Array.isArray(_names)) {
+         throw new TypeError('an array of async function "names" is required');
+     }
+@@ -66,26 +61,21 @@
+                                 shouldDegenerate = true;
+                             }
+                             return false;
+-                        }
++                        },
+                     });
+                     if (!shouldDegenerate) {
+                         return false;
+                     }
+                     // Got a "function" expression/statement,
+-                    // convert it into an async or generator function
+-                    if (output === 'async') {
+-                        path.node.async = true;
+-                    }
+-                    else if (output === 'generator') {
+-                        path.node.generator = true;
+-                    }
++                    // convert it into an async function
++                    path.node.async = true;
+                     // Add function name to `names` array
+                     if (!checkName(path.node.id.name, names)) {
+                         names.push(path.node.id.name);
+                     }
+                 }
+                 this.traverse(path);
+-            }
++            },
+         });
+     } while (lastNamesLength !== names.length);
+     // Second pass is for adding `await`/`yield` statements to any function
+@@ -96,17 +86,8 @@
+                 // A "function invocation" expression,
+                 // we need to inject a `AwaitExpression`/`YieldExpression`
+                 const delegate = false;
+-                const { name, parent: { node: pNode } } = path;
+-                let expr;
+-                if (output === 'async') {
+-                    expr = ast_types_1.builders.awaitExpression(path.node, delegate);
+-                }
+-                else if (output === 'generator') {
+-                    expr = ast_types_1.builders.yieldExpression(path.node, delegate);
+-                }
+-                else {
+-                    throw new Error('Only "async" and "generator" are allowd `output` values');
+-                }
++                const { name, parent: { node: pNode }, } = path;
++                const expr = ast_types_1.builders.awaitExpression(path.node, delegate);
+                 if (ast_types_1.namedTypes.CallExpression.check(pNode)) {
+                     pNode.arguments[name] = expr;
+                 }
+@@ -115,36 +96,41 @@
+                 }
+             }
+             this.traverse(path);
+-        }
++        },
+     });
+     return escodegen_1.generate(ast);
+ }
+ (function (degenerator) {
+-    degenerator.supportsAsync = supports_async_1.default;
+     function compile(code, returnName, names, options = {}) {
+-        const output = supports_async_1.default ? 'async' : 'generator';
+-        const compiled = degenerator(code, names, Object.assign(Object.assign({}, options), { output }));
+-        const fn = vm_1.runInNewContext(`${compiled};${returnName}`, options.sandbox, options);
++        const compiled = degenerator(code, names);
++        const vm = new vm2_1.VM(options);
++        const script = new vm2_1.VMScript(`${compiled};${returnName}`, {
++            filename: options.filename,
++        });
++        const fn = vm.run(script);
+         if (typeof fn !== 'function') {
+             throw new Error(`Expected a "function" to be returned for \`${returnName}\`, but got "${typeof fn}"`);
+         }
+-        if (isAsyncFunction(fn)) {
+-            return fn;
+-        }
+-        else {
+-            const rtn = generator_to_promise_1.default(fn);
+-            Object.defineProperty(rtn, 'toString', {
+-                value: fn.toString.bind(fn),
+-                enumerable: false
+-            });
+-            return rtn;
+-        }
++        const r = function (...args) {
++            try {
++                const p = fn.apply(this, args);
++                if (typeof (p === null || p === void 0 ? void 0 : p.then) === 'function') {
++                    return p;
++                }
++                return Promise.resolve(p);
++            }
++            catch (err) {
++                return Promise.reject(err);
++            }
++        };
++        Object.defineProperty(r, 'toString', {
++            value: fn.toString.bind(fn),
++            enumerable: false,
++        });
++        return r;
+     }
+     degenerator.compile = compile;
+ })(degenerator || (degenerator = {}));
+-function isAsyncFunction(fn) {
+-    return typeof fn === 'function' && fn.constructor.name === 'AsyncFunction';
+-}
+ /**
+  * Returns `true` if `node` has a matching name to one of the entries in the
+  * `names` array.
+diff --color -urN a/dist/src/index.js.map b/dist/src/index.js.map
+--- a/dist/src/index.js.map	2023-09-13 10:57:33.433754825 -0700
++++ b/dist/src/index.js.map	2023-09-13 10:58:22.990531631 -0700
+@@ -1 +1 @@
+-{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/index.ts"],"names":[],"mappings":"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"}
+\ No newline at end of file
++{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/index.ts"],"names":[],"mappings":"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"}
+\ No newline at end of file
+diff --color -urN a/dist/src/supports-async.d.ts b/dist/src/supports-async.d.ts
+--- a/dist/src/supports-async.d.ts	2023-09-13 10:57:33.435401361 -0700
++++ b/dist/src/supports-async.d.ts	2023-09-13 10:58:22.991103212 -0700
+@@ -1,2 +0,0 @@
+-declare const supportsAsync: boolean;
+-export default supportsAsync;
+diff --color -urN a/dist/src/supports-async.js b/dist/src/supports-async.js
+--- a/dist/src/supports-async.js	2023-09-13 10:57:33.431712248 -0700
++++ b/dist/src/supports-async.js	2023-09-13 10:58:22.991952918 -0700
+@@ -1,14 +1,2 @@
+ "use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-const vm_1 = require("vm");
+-const supportsAsync = (() => {
+-    try {
+-        const fn = vm_1.runInNewContext('(async function () {})');
+-        return fn.constructor.name === 'AsyncFunction';
+-    }
+-    catch (err) {
+-        return false;
+-    }
+-})();
+-exports.default = supportsAsync;
+ //# sourceMappingURL=supports-async.js.map
+\ No newline at end of file
+diff --color -urN a/dist/src/supports-async.js.map b/dist/src/supports-async.js.map
+--- a/dist/src/supports-async.js.map	2023-09-13 10:57:33.434249490 -0700
++++ b/dist/src/supports-async.js.map	2023-09-13 10:58:22.992455250 -0700
+@@ -1 +1 @@
+-{"version":3,"file":"supports-async.js","sourceRoot":"","sources":["../../src/supports-async.ts"],"names":[],"mappings":";;AAAA,2BAAqC;AAErC,MAAM,aAAa,GAAG,CAAC,GAAY,EAAE;IACpC,IAAI;QACH,MAAM,EAAE,GAAG,oBAAe,CAAC,wBAAwB,CAAC,CAAC;QACrD,OAAO,EAAE,CAAC,WAAW,CAAC,IAAI,KAAK,eAAe,CAAC;KAC/C;IAAC,OAAO,GAAG,EAAE;QACb,OAAO,KAAK,CAAC;KACb;AACF,CAAC,CAAC,EAAE,CAAC;AAEL,kBAAe,aAAa,CAAC"}
+\ No newline at end of file
++{"version":3,"file":"supports-async.js","sourceRoot":"","sources":["../../src/supports-async.ts"],"names":[],"mappings":""}
+\ No newline at end of file
+diff --color -urN a/package.json b/package.json
+--- a/package.json	2023-09-13 10:57:33.432264454 -0700
++++ b/package.json	2023-09-13 11:00:06.443786038 -0700
+@@ -27,7 +27,8 @@
+   "dependencies": {
+     "ast-types": "^0.13.2",
+     "escodegen": "^1.8.1",
+-    "esprima": "^4.0.0"
++    "esprima": "^4.0.0",
++    "vm2": "^3.9.3"
+   },
+   "devDependencies": {
+     "@types/escodegen": "^0.0.6",
