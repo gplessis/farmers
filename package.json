@@ -10,6 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pac-resolver": "^4.2.0"
+    "pac-resolver": "^7.0.0"
   }
 }
